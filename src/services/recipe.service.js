@@ -1,51 +1,117 @@
-const Recipe = require("../models/recipe.model");
+const recipeService = require("../services/recipe.service");
 
-// --- Business logic lives here, controllers stay thin ---
+const createRecipe = async (req, res, next) => {
+  try {
+    const newRecipe = await recipeService.createRecipe(req.body);
 
-const getAllRecipes = async (categoryFilter) => {
-  // Build a query object only if a category filter was passed in
-  const query = categoryFilter ? { category: categoryFilter } : {};
-  const recipes = await Recipe.find(query).sort({ createdAt: -1 });
-  return recipes;
-};
-
-const getRecipeById = async (recipeId) => {
-  const recipe = await Recipe.findById(recipeId);
-  return recipe; // Returns null if not found — controller handles the 404
-};
-
-const createRecipe = async (recipeData) => {
-  // Validate that cookingTime is a positive number (business rule)
-  if (recipeData.cookingTime <= 0) {
-    throw new Error("Cooking time must be a positive number");
+    res.status(201).json({
+      status: "success",
+      message: "Recipe created successfully",
+      data: newRecipe,
+    });
+  } catch (error) {
+    next(error);
   }
-
-  const newRecipe = new Recipe(recipeData);
-  const savedRecipe = await newRecipe.save();
-  return savedRecipe;
 };
 
-const updateRecipe = async (recipeId, updates) => {
-  // Validate cookingTime if it's being updated
-  if (updates.cookingTime !== undefined && updates.cookingTime <= 0) {
-    throw new Error("Cooking time must be a positive number");
-  }
+const getAllRecipes = async (req, res, next) => {
+  try {
+    const { category } = req.query;
+    const recipes = await recipeService.getAllRecipes(category);
 
-  const updatedRecipe = await Recipe.findByIdAndUpdate(
-    recipeId,
-    updates,
-    {
-      new: true,          // Return the updated document, not the old one
-      runValidators: true, // Re-run schema validators on the updated fields
+    res.status(200).json({
+      status: "success",
+      count: recipes.length,
+      data: recipes,
+    });
+  } catch (error) {
+    next(error); 
+  }
+};
+
+
+const getRecipeById = async (req, res, next) => {
+  try {
+    const recipe = await recipeService.getRecipeById(req.params.id);
+
+    if (!recipe) {
+      
+      const error = new Error(`Recipe with ID ${req.params.id} is not found try again`);
+      error.statusCode = 404;
+      return next(error);
     }
-  );
 
-  return updatedRecipe; // Returns null if ID not found — controller handles the 404
+    res.status(200).json({
+      status: "success",
+      data: recipe,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-const deleteRecipe = async (recipeId) => {
-  const deletedRecipe = await Recipe.findByIdAndDelete(recipeId);
-  return deletedRecipe; // Returns null if ID not found — controller handles the 404
+
+
+
+
+const updateRecipe = async (req, res, next) => {
+  try {
+    const updatedRecipe = await recipeService.updateRecipe(
+      req.params.id,
+      req.body
+    );
+
+    if (!updatedRecipe) {
+      const error = new Error(`Recipe with ID ${req.params.id} is not found try again`);
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Recipe updated successfully",
+      data: updatedRecipe,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const deleteRecipe = async (req, res, next) => {
+  try {
+    const deletedRecipe = await recipeService.deleteRecipe(req.params.id);
+
+    if (!deletedRecipe) {
+      const error = new Error(`Recipe with ID ${req.params.id} is not found try again`);
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Recipe deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteAllRecipes = async (req, res, next) => {
+  try {
+    const deleteAllRecipes = await recipeService.deleteAllRecipes();
+    if (!deleteAllRecipes) {
+      const error = new Error(`No recipes found to delete`);
+      error.statusCode = 404;
+      return next(error);
+    }
+    res.status(200).json({
+      status: "success",
+      message: "All recipes deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {
@@ -54,4 +120,5 @@ module.exports = {
   createRecipe,
   updateRecipe,
   deleteRecipe,
+  deleteAllRecipes,
 };
