@@ -95,5 +95,22 @@ const deleteRecipe = async (req, res, next) => {
   }
 };
 
+// This method deletes all recipes from the database. Use with caution!
+const deleteAllRecipes = async (req, res, next) => {
+  try {
+    const deleteAllRecipes = await recipeService.deleteAllRecipes();
+    if (!deleteAllRecipes) {
+      const error = new Error(`No recipes found to delete`);
+      error.statusCode = 404;
+      return next(error);
+    }
+    res.status(200).json({
+      status: "success",
+      message: "All recipes deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
