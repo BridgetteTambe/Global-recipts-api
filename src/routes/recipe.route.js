@@ -24,7 +24,7 @@ const recipeSchema = new mongoose.Schema(
       trim: true,
     },
 
-    
+   
     cookingTime: {
       type: Number,
       required: [true, "Cooking time is required"],
@@ -59,7 +59,7 @@ const recipeSchema = new mongoose.Schema(
     },
   },
   {
-   
+    
     timestamps: true,
   }
 );
