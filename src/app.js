@@ -1,4 +1,4 @@
-require("dotenv").config(); // Load .env variables before anything else
+require("dotenv").config();
 
 const express = require("express");
 const connectDB = require("./config/database");
