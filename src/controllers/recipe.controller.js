@@ -1,3 +1,4 @@
+const recipeService = require("../services/recipe.service");
 
 const createRecipe = async (req, res, next) => {
   try {
@@ -13,7 +14,7 @@ const createRecipe = async (req, res, next) => {
   }
 };
 
-const recipeService = require("../services/recipe.service");
+
 const getAllRecipes = async (req, res, next) => {
   try {
     const { category } = req.query;
